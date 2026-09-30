@@ -1,0 +1,8 @@
+{
+  "identical_clean_rebuild": true,
+  "sha256": {
+    "morphdemo-64k": "73824a24e929c0aaa868c1c238906f6fcab648e0659d712e04591b89a8d959aa",
+    "morphdemo-16k": "d98e6e259a8859af9eb366aa38df0976b065b4aa271a36f51936de9fc3db87ca",
+    "morphdemo-4k": "91f9ed3c79f2bc6ca6b16c214228b2360cddd3359ae02cae01c29683406beac1"
+  }
+}

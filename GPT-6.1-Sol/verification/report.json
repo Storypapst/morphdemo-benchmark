@@ -1,0 +1,313 @@
+{
+  "verified_at_utc": "2026-09-29T19:48:20.277658+00:00",
+  "environment": "ENVIRONMENT.json",
+  "master_clock": "Generated stereo audio, 48000 Hz, 120 BPM, 64 seconds",
+  "executables": {
+    "morphdemo-64k": {
+      "file_bytes": 65536,
+      "sha256": "73824a24e929c0aaa868c1c238906f6fcab648e0659d712e04591b89a8d959aa",
+      "exit_code": 0,
+      "wall_seconds": 69.861,
+      "empty_cwd": true,
+      "frames": [
+        {
+          "at_seconds": 5,
+          "width": 1920,
+          "height": 1080,
+          "mean_rgb": 44.6386,
+          "sha256": "38d59b1beab34defdf2fecfc4f2958323ae6487efc2badcb144c228957ca21f9"
+        },
+        {
+          "at_seconds": 5.5,
+          "width": 1920,
+          "height": 1080,
+          "mean_rgb": 44.5663,
+          "sha256": "14dcc68ab1faf1532ea10c9b7e8abb8ee4b7877bedbe3ebd9e7671ec18f57155"
+        },
+        {
+          "at_seconds": 20,
+          "width": 1920,
+          "height": 1080,
+          "mean_rgb": 47.4505,
+          "sha256": "349d6437a21b81c72e934a44a009b8fa7d09582015470d2232c56d140d91aa36"
+        },
+        {
+          "at_seconds": 20.5,
+          "width": 1920,
+          "height": 1080,
+          "mean_rgb": 47.8285,
+          "sha256": "2d01b799f13d586338f756a5aac2f431419b2caffcf2ac789054e67e031297c2"
+        },
+        {
+          "at_seconds": 42,
+          "width": 1920,
+          "height": 1080,
+          "mean_rgb": 55.954,
+          "sha256": "de4ce060d737562ddf034ef2643e1fbef1344238f5910cccdecfe4aee6dc51d1"
+        },
+        {
+          "at_seconds": 42.5,
+          "width": 1920,
+          "height": 1080,
+          "mean_rgb": 56.4117,
+          "sha256": "4aff52c79448379b74f796d1e725934c0f09c48c710469fb983e1e481a4b6e08"
+        },
+        {
+          "at_seconds": 56,
+          "width": 1920,
+          "height": 1080,
+          "mean_rgb": 60.5562,
+          "sha256": "49df625e295ec059c4af4a34dc7834c5121f1786b7b814ef6267c0c2081ba2c7"
+        },
+        {
+          "at_seconds": 63,
+          "width": 1920,
+          "height": 1080,
+          "mean_rgb": 60.9404,
+          "sha256": "01a32308c4b74960a01b06f9f89bf15ddfbf85990e0f5006400266a173673cb0"
+        }
+      ],
+      "audio": {
+        "rate_hz": 48000,
+        "channels": 2,
+        "peak": 0.367981,
+        "phases": {
+          "emergence": {
+            "rms": 0.059401,
+            "peak": 0.151337
+          },
+          "transformation": {
+            "rms": 0.068165,
+            "peak": 0.303284
+          },
+          "resolution": {
+            "rms": 0.08569,
+            "peak": 0.346985
+          },
+          "coda": {
+            "rms": 0.085366,
+            "peak": 0.340515
+          }
+        }
+      },
+      "trace": {
+        "internet_sockets": 0,
+        "external_executables": 0,
+        "internal_memfd_execs": 0,
+        "source_or_asset_reads": 0
+      },
+      "playback_seconds": 69.168,
+      "rendered_frames": 3948,
+      "average_fps": 57.08,
+      "escape": {
+        "exit_code": 0,
+        "latency_seconds": 0.064
+      }
+    },
+    "morphdemo-16k": {
+      "file_bytes": 16384,
+      "sha256": "d98e6e259a8859af9eb366aa38df0976b065b4aa271a36f51936de9fc3db87ca",
+      "exit_code": 0,
+      "wall_seconds": 67.064,
+      "empty_cwd": true,
+      "frames": [
+        {
+          "at_seconds": 5,
+          "width": 1920,
+          "height": 1080,
+          "mean_rgb": 41.6129,
+          "sha256": "84733017ca9cb48515e9b7e1889644176eef8dec6b38c98fa43c4da8302fe668"
+        },
+        {
+          "at_seconds": 5.5,
+          "width": 1920,
+          "height": 1080,
+          "mean_rgb": 41.7797,
+          "sha256": "f488962aaa5f96e55dee4603be244297d3aca3a828cbff96a6d33b0793921139"
+        },
+        {
+          "at_seconds": 20,
+          "width": 1920,
+          "height": 1080,
+          "mean_rgb": 45.0382,
+          "sha256": "8f43c1791b10961616dad0ef6a7ce8a58be43a048671e4c6423eee8081bbe00f"
+        },
+        {
+          "at_seconds": 20.5,
+          "width": 1920,
+          "height": 1080,
+          "mean_rgb": 45.0903,
+          "sha256": "27efae1006c58291cb99462a39be6bba6a48d0cb5c7fa6081e89d8d6cbd4ce5e"
+        },
+        {
+          "at_seconds": 42,
+          "width": 1920,
+          "height": 1080,
+          "mean_rgb": 50.0632,
+          "sha256": "116f15c7b5a9ed38484b8e42d1df17c9966cef683179fa34b110149243df3364"
+        },
+        {
+          "at_seconds": 42.5,
+          "width": 1920,
+          "height": 1080,
+          "mean_rgb": 49.4814,
+          "sha256": "22c6734b0c7d7a673e4160a7d9a8d856aef847e3645c333b9fd6000b03809c0a"
+        },
+        {
+          "at_seconds": 56,
+          "width": 1920,
+          "height": 1080,
+          "mean_rgb": 47.2125,
+          "sha256": "198e2889fe58c6119cc38d019c88b3b1e6654c6dfb3be33f9015d3ea82211276"
+        },
+        {
+          "at_seconds": 63,
+          "width": 1920,
+          "height": 1080,
+          "mean_rgb": 30.7636,
+          "sha256": "d7b96b0ba1eaf296e5f12785c51b1e6763894e1b59df4f2a47aed06e5315e53c"
+        }
+      ],
+      "audio": {
+        "rate_hz": 48000,
+        "channels": 2,
+        "peak": 0.3797,
+        "phases": {
+          "emergence": {
+            "rms": 0.031956,
+            "peak": 0.130524
+          },
+          "transformation": {
+            "rms": 0.07429,
+            "peak": 0.311249
+          },
+          "resolution": {
+            "rms": 0.10607,
+            "peak": 0.371521
+          },
+          "coda": {
+            "rms": 0.077779,
+            "peak": 0.308228
+          }
+        }
+      },
+      "trace": {
+        "internet_sockets": 0,
+        "external_executables": 0,
+        "internal_memfd_execs": 1,
+        "source_or_asset_reads": 0
+      },
+      "playback_seconds": 66.462,
+      "rendered_frames": 3877,
+      "average_fps": 58.33,
+      "escape": {
+        "exit_code": 0,
+        "latency_seconds": 0.064
+      }
+    },
+    "morphdemo-4k": {
+      "file_bytes": 4096,
+      "sha256": "91f9ed3c79f2bc6ca6b16c214228b2360cddd3359ae02cae01c29683406beac1",
+      "exit_code": 0,
+      "wall_seconds": 68.487,
+      "empty_cwd": true,
+      "frames": [
+        {
+          "at_seconds": 5,
+          "width": 1920,
+          "height": 1080,
+          "mean_rgb": 33.1227,
+          "sha256": "e470abb6b1d64aaf2c7224463d0b7fceb8a04e074319e29f312c007266a4839f"
+        },
+        {
+          "at_seconds": 5.5,
+          "width": 1920,
+          "height": 1080,
+          "mean_rgb": 33.7358,
+          "sha256": "faa524805632bd41a681db04fb96dc512c08b1a0be73d9dafcca1d2cc29d8a76"
+        },
+        {
+          "at_seconds": 20,
+          "width": 1920,
+          "height": 1080,
+          "mean_rgb": 41.7153,
+          "sha256": "073937893d12010cea91b82254b5373f0c53799bb96f6288b6b41d94a792b62d"
+        },
+        {
+          "at_seconds": 20.5,
+          "width": 1920,
+          "height": 1080,
+          "mean_rgb": 41.668,
+          "sha256": "0b247d8169aafcfdb6ac36206dd0afa958f4a3e17df61b1b48503f4949a8ce05"
+        },
+        {
+          "at_seconds": 42,
+          "width": 1920,
+          "height": 1080,
+          "mean_rgb": 43.7262,
+          "sha256": "29ff7d6013c932072af09fc6302ff9fcedd7e01b9be706c119d6827a87c8d736"
+        },
+        {
+          "at_seconds": 42.5,
+          "width": 1920,
+          "height": 1080,
+          "mean_rgb": 43.0476,
+          "sha256": "4439c5b39b22158f4b3414285ee7ea5d670915598a438b1d2621d589e28fc953"
+        },
+        {
+          "at_seconds": 56,
+          "width": 1920,
+          "height": 1080,
+          "mean_rgb": 44.0243,
+          "sha256": "ad227760fb4b1c52e9757584d8b66de73f9f367d0f4677b7162a700c416ae693"
+        },
+        {
+          "at_seconds": 63,
+          "width": 1920,
+          "height": 1080,
+          "mean_rgb": 40.7494,
+          "sha256": "15da99acdb2b7a91efea34fd433274f0561d0912e9f7697c68cf79ad752c3d5b"
+        }
+      ],
+      "audio": {
+        "rate_hz": 48000,
+        "channels": 2,
+        "peak": 0.569641,
+        "phases": {
+          "emergence": {
+            "rms": 0.077721,
+            "peak": 0.406738
+          },
+          "transformation": {
+            "rms": 0.084912,
+            "peak": 0.479706
+          },
+          "resolution": {
+            "rms": 0.088869,
+            "peak": 0.468445
+          },
+          "coda": {
+            "rms": 0.088451,
+            "peak": 0.514435
+          }
+        }
+      },
+      "trace": {
+        "internet_sockets": 0,
+        "external_executables": 0,
+        "internal_memfd_execs": 1,
+        "source_or_asset_reads": 0
+      },
+      "escape": {
+        "exit_code": 0,
+        "latency_seconds": 0.032
+      }
+    }
+  },
+  "visual_review": {
+    "MORPH_visible_in_all_three": true,
+    "distinct_phases_reviewed": true,
+    "evidence": "frame-5.png, frame-20.png, frame-42.png, frame-63.png in each executable directory"
+  },
+  "trace_note": "Instrumented runs included full IPC tracing; retained archives omit local IPC payload bodies."
+}
