@@ -1,0 +1,60 @@
+MorphDemo verification record
+host: Linux 6.18.43 x86_64, GPU RTX 5090, driver 595.71.05, KDE Plasma on Wayland, PipeWire; date 2026-09-29T13:15:06+02:00
+
+== sha256 of the deliverables
+d247fa1484911733986d76e6af63a923cc44583356a972e479baf2ee94db43bd  morphdemo-4k
+36ff2b70902ba132e4339a99ddc523fdab68f4124a0c70502a96b30bfbbeef71  morphdemo-16k
+5d494733ef07cd3fe469f504bbf6df9e6bb91e9502b30795405abcac988df746  morphdemo-64k
+
+== python3 tools/verify.py sizes
+morphdemo-64k   65536 bytes (want  65536)  ELF=True  executable=True  OK
+morphdemo-16k   16384 bytes (want  16384)  ELF=True  executable=True  OK
+morphdemo-4k     4096 bytes (want   4096)  ELF=True  executable=True  OK
+
+== python3 tools/verify.py run   (real time, plain executables, start to exit)
+morphdemo-64k  exit 0, wall time 60.57 s  OK 
+morphdemo-16k  exit 0, wall time 60.47 s  OK 
+morphdemo-4k   exit 0, wall time 60.22 s  OK 
+
+== python3 tools/verify.py content   (10x clock under the LD_PRELOAD hook)
+morphdemo-64k  OK  (audio 60 s, block RMS dBFS -18 -16 -17 -16 -13 -13, 182 frames, 6.5 s at 10x)  
+morphdemo-16k  OK  (audio 60 s, block RMS dBFS -21 -17 -16 -14 -14 -14, 183 frames, 6.5 s at 10x)  
+morphdemo-4k   OK  (audio 60 s, block RMS dBFS -23 -17 -15 -13 -13 -12, 183 frames, 6.2 s at 10x)  
+
+== python3 tools/verify.py escape   (Escape key event injected through SDL_PollEvent after 4 s)
+morphdemo-64k  Escape injected at 4 s: exit 0 after 4.48 s  OK
+morphdemo-16k  Escape injected at 4 s: exit 0 after 4.44 s  OK
+morphdemo-4k   Escape injected at 4 s: exit 0 after 4.17 s  OK
+
+== tools/dev/esctest.sh with NOACTIVATE=1   (real key press through uinput, window focused by the compositor on its own)
+-- morphdemo-4k
+RESULT: demo exited after Escape, exit code 0, within 0.1 s
+-- morphdemo-16k
+RESULT: demo exited after Escape, exit code 0, within 0.1 s
+-- morphdemo-64k
+RESULT: demo exited after Escape, exit code 0, within 0.1 s
+
+== tools/dev/audiotest.py <demo>   (audio routed to the virtual loopback sink, recorded with pw-record, compared with the reference render of the score)
+== 4k
+recorded 62.51 s (3000320 frames), demo wall time 61.04 s, exit code 0
+recording lags the reference by 80384 samples = 1674.7 ms (start of the queue playback in the recording; includes the wait before the demo started)
+after alignment: 2880000 frames compared, signal to error 173.1 dB, max abs error 0.0000, peak rec 0.691 ref 0.691
+silent windows (20 ms) where the score is not silent: 0 []
+signal to error per 5 s block (dB): 155 152 158 160 161 163 164 164 161 165 165
+== 16k
+recorded 62.74 s (3011584 frames), demo wall time 61.28 s, exit code 0
+recording lags the reference by 91648 samples = 1909.3 ms (start of the queue playback in the recording; includes the wait before the demo started)
+after alignment: 2880000 frames compared, signal to error 172.2 dB, max abs error 0.0000, peak rec 0.651 ref 0.651
+silent windows (20 ms) where the score is not silent: 0 []
+signal to error per 5 s block (dB): 156 154 159 161 161 162 162 162 160 164 163
+== 64k
+recorded 62.78 s (3013632 frames), demo wall time 61.35 s, exit code 0
+recording lags the reference by 93696 samples = 1952.0 ms (start of the queue playback in the recording; includes the wait before the demo started)
+after alignment: 2880000 frames compared, signal to error 172.6 dB, max abs error 0.0000, peak rec 0.696 ref 0.696
+silent windows (20 ms) where the score is not silent: 0 []
+signal to error per 5 s block (dB): 157 160 160 161 161 160 161 161 161 166 164
+(the recorded audio is the queued audio, sample for sample; the recording lags the demo start by the time the recorder needed to see the first buffer)
+
+== clean rebuild
+A copy of the tree without build/ and without the three executables was built from a bare environment (env -i PATH=/run/current-system/sw/bin make all, nasm fetched through nix-shell):
+morphdemo-4k, morphdemo-16k and morphdemo-64k are byte-identical to the deliverables.

@@ -1,0 +1,185 @@
+#version 430
+layout(local_size_x=64) in;
+layout(std430,binding=0) buffer B{vec4 o[];};      // pass 1 output: xy = dry mix, zw = reverb send
+const float P=6.2831853,BT=.625,SX=.15625,BAR=2.5;
+float N,N1,I0;
+
+float fq(float n){return 41.2035*exp2(n/12.);}      // n semitones above E1
+float blep(float t,float dt){if(t<dt){t/=dt;return t+t-t*t-1.;}if(t>1.-dt){t=(t-1.)/dt;return t*t+t+t+1.;}return 0.;}
+float saw(float f,float t){float dt=f/48000.,ph=fract(f*t);return 2.*ph-1.-blep(ph,dt);}
+float sn(float f,float t){return sin(P*fract(f*t));}
+float lpn(int M,uint sd){float s=0.;for(int m=0;m<M;m++)s+=F(uint(I0)*2u+1u-uint(m)*2u+sd)*2.-1.;return s*inversesqrt(float(M));}
+vec2 lps(int M){return vec2(lpn(M,0u),lpn(M,77777u));}
+float win(float t,float a,float b){return smoothstep(a,a+.05,t)*(1.-smoothstep(b-.05,b,t));}
+
+// ---------------------------------------------------------------- harmony: Em | C | G | D (bars 8..21), Em pedal before, E major at the end
+float rt(float b){float c=mod(b,4.);return c<1.?0.:c<2.?-4.:c<3.?3.:-2.;}      // Em, C, G, D
+float th(float b){return mod(b,4.)<1.?3.:4.;}
+float chord_root(float b){return b<10.?0.:b>=22.?0.:rt(b-10.);}                 // bars 0..9 Em pedal, 10..21 the loop, then E major
+float chord_third(float b){return b<10.?3.:b>=22.?4.:th(b-10.);}
+float tone(float b,int i){float t=chord_third(b);return i==0?0.:i==1?t:i==2?7.:i==3?12.:i==4?12.+t:i==5?14.:19.;}
+
+// ---------------------------------------------------------------- drums
+float kick(float t){return t<0.?0.:(sin(P*(48.*t+9.*(1.-exp(-26.*t))))*exp(-t*7.)+.6*N*exp(-t*220.))*.9;}
+float snare(float t){return t<0.?0.:(N*exp(-t*16.)*.55+sn(185.,t)*exp(-t*22.)*.5+(N-N1)*exp(-t*40.)*.3);}
+float tom(float t,float f){return t<0.?0.:sin(P*(f*t+f*.35*(1.-exp(-t*30.))/30.*6.))*exp(-t*9.);}
+float hat(float t,float d){return t<0.?0.:(N-N1)*exp(-t*d);}
+float boom(float t){return t<0.?0.:sin(P*(70.*t-25.*(1.-exp(-t*2.))))*exp(-t*1.1);}
+
+// ---------------------------------------------------------------- melodic voices
+float pluck(float f,float t){if(t<0.)return 0.;float m=sin(P*f*t*1.4142+3.*exp(-t*6.)*sin(P*f*t));return (sin(P*fract(f*t)+2.*exp(-t*5.)*m))*exp(-t*3.);}
+float ss(float f,float t,float w){   // saw stack
+  float s=0.;
+  for(int k=0;k<5;k++){float d=(float(k)-2.)*w;s+=saw(f*(1.+d),t+float(k)*.0137);}
+  return s*.2;
+}
+float formant(float f,float t,float v){   // choir-like vowel: v=0 'ah', v=1 'oo'
+  float s=0.;
+  float f1=mix(800.,320.,v),f2=mix(1150.,800.,v),f3=2800.;
+  for(int h=1;h<26;h++){
+    float fh=f*float(h);
+    float x1=(fh-f1)/(.5*f1+60.),x2=(fh-f2)/(.4*f2+80.),x3=(fh-f3)/500.;
+    float a=exp(-x1*x1)+.6*exp(-x2*x2)+.3*exp(-x3*x3);
+    s+=sin(P*fract(fh*t))*a/(1.+float(h)*.15);
+  }
+  return s;
+}
+
+vec2 strings(float t){    // legato chord pad with slow swell, plus 16th ostinato in the build/drop
+  float g=win(t,14.,42.)+win(t,44.9,59.)*1.2;
+  float bar=floor(t/BAR);vec2 r=vec2(0.);
+  for(int j=0;j<2;j++){
+    float b=bar-float(j),tb=t-b*BAR;
+    float e=smoothstep(0.,.7,tb)*(1.-smoothstep(BAR-.1,BAR+.6,tb));
+    float vib=1.+.003*sin(P*5.3*t);
+    for(int i=0;i<4;i++){
+      float f=fq(chord_root(b)+24.+tone(b,i==3?5:i))*vib;
+      r+=vec2(ss(f,tb,.006),ss(f*1.002,tb,.006))*e*.2;
+    }
+  }
+  return r*g;
+}
+vec2 pad(float t){
+  float g=win(t,8.,40.)*.8+win(t,44.9,60.);
+  float bar=floor(t/BAR);vec2 r=vec2(0.);
+  float bri=mix(.2,1.,smoothstep(10.,40.,t))*(1.-.3*smoothstep(55.,60.,t));
+  for(int j=0;j<2;j++){
+    float b=bar-float(j),tb=t-b*BAR;
+    float e=smoothstep(0.,1.,tb)*(1.-smoothstep(BAR-.2,BAR+.8,tb));
+    for(int i=0;i<3;i++){
+      float f=fq(chord_root(b)+12.+tone(b,i));
+      float s=mix(sn(f,tb)+.3*sn(f*2.,tb),ss(f,tb,.011)*2.,bri);
+      r+=vec2(s,s)*e*.16;
+    }
+  }
+  return r*g;
+}
+vec2 bells(float t){      // FM arpeggio, 8ths then 16ths, tuning improves with order
+  float O=ORD(t);
+  float g=win(t,16.,40.)*.6+win(t,45.,58.);
+  float sxl=t<45.?BT/2.:SX;
+  float st=floor(t/sxl);vec2 r=vec2(0.);
+  for(int j=0;j<6;j++){
+    float k=st-float(j);float tk=k*sxl;
+    float b=floor(tk/BAR);
+    float q=mod(k,7.);int i=int(q<1.?0.:q<2.?2.:q<3.?4.:q<4.?3.:q<5.?6.:q<6.?4.:2.);
+    float n=chord_root(b)+36.+tone(b,i)+(1.-O)*(F(k+5.)-.5)*5.;
+    float v=pluck(fq(n),t-tk-(1.-O)*(F(k+9.)-.5)*.08)*.3;
+    float pan=.5+.4*sin(k*1.9);
+    r+=v*vec2(1.-pan,pan);
+  }
+  return r*g;
+}
+vec2 lead(float t){
+  float g=win(t,45.,56.2)+win(t,30.,40.)*.7;
+  float st=floor(t/(BT/2.)),b=floor(t/BAR);
+  float ph=mod(st,8.);
+  float m=ph<1.?4.:ph<2.?9.:ph<3.?6.:ph<4.?9.:ph<5.?4.:ph<6.?9.:ph<7.?2.:3.;
+  vec2 r=vec2(0.);
+  if(m<8.){
+    float tl=t-st*BT/2.;
+    float f=fq(chord_root(b)+36.+tone(b,int(m)));
+    float e=smoothstep(0.,.02,tl)*exp(-tl*2.2);
+    float s=ss(f*(1.+.004*sin(P*5.5*tl)),tl,.004)*2.+.4*sn(f*.5,tl);
+    r=vec2(s*e*.3);
+  }
+  return r*g;
+}
+vec2 choir(float t){
+  float g=win(t,40.,45.)*smoothstep(40.,43.,t)+win(t,45.,56.5)*.7+smoothstep(56.,57.,t);
+  float bar=floor(t/BAR);vec2 r=vec2(0.);
+  for(int j=0;j<2;j++){
+    float b=bar-float(j),tb=t-b*BAR;
+    float e=smoothstep(0.,.8,tb)*(1.-smoothstep(BAR-.2,BAR+.7,tb));
+    if(t>56.){b=22.;tb=t-56.;e=smoothstep(0.,1.2,tb)*(1.-smoothstep(3.,3.9,tb));}
+    for(int i=0;i<3;i++){
+      float f=fq(chord_root(b)+36.+tone(b,i==0?0:i==1?1:2))*(1.+.004*sin(P*5.1*t+float(i)));
+      float v=formant(f,tb,.5+.5*sin(t*.3));
+      r+=vec2(v*(.8+.2*float(i)),v*(1.-.2*float(i)))*e*.08;
+    }
+    if(t>56.)break;
+  }
+  return r*g;
+}
+
+void main(){
+  uint i=gl_GlobalInvocationID.x;
+  float t=float(i)/48000.;I0=float(i);
+  N=F(i*2u+1u)*2.-1.;N1=F((i-1u)*2u+1u)*2.-1.;
+  float O=ORD(t),S=STA(t);
+  vec2 dry=vec2(0.),snd=vec2(0.);
+  // ---- storm bed: wind, geiger clicks / lightning, thunder
+  dry+=(lps(24)*.5+lps(3)*.12)*.26*S*(.6+.4*sin(t*.31));
+  dry+=vec2(N)*CK(t)*.5;
+  dry+=lps(48)*TH(t)*.26+vec2(N)*LG(t)*.08;
+  // ---- drone
+  float dr=smoothstep(2.,9.,t)*(1.-.6*smoothstep(20.,24.,t));
+  dry+=vec2(sn(fq(12.),t)*.06+sn(fq(19.)*1.002,t)*.045+sn(fq(24.)*.998,t)*.045+sn(fq(31.)*1.001,t)*.03)*dr;
+  // ---- kicks (from the shared schedule)
+  float kd=0.,k0=floor(t/BT);
+  for(int j=0;j<3;j++){float k=k0+1.-float(j);kd+=kick(t-KT(k))*KV(k);}
+  dry+=vec2(kd)*.34;
+  float duck=1.-.55*KE(t);
+  // ---- hats / shaker / snare
+  float sk=floor(t/SX),sp=fract(t/SX)*SX;
+  float on16=step(20.,t)*(1.-step(40.,t)+step(45.,t));
+  dry+=vec2(hat(fract(t/BT+.5)*BT,55.),hat(fract(t/BT+.5)*BT,55.))*.09*on16;
+  dry+=vec2(hat(sp,190.)*step(.5,F(sk+33.)+.4)*.07*step(30.,t)*(1.-step(40.,t)+step(45.,t)));
+  float bt=floor(t/BT);
+  float sn2=snare(mod(t,BT*2.)-BT)*step(mod(bt,2.),.5)*step(30.,t)*(1.-step(40.,t)+step(45.,t))*(1.-step(56.,t));
+  dry+=vec2(sn2)*.42;snd+=vec2(sn2)*.4;
+  // ---- bass: 8th notes on the chord root; mid-bass octave carries pitch on small speakers
+  float bn=floor(t/(BT/2.)),bb=floor(t/BAR),bl=t-bn*BT/2.;
+  float bp=mod(bn,8.);
+  float on=bp<1.?1.:bp<2.?0.:bp<3.?1.:bp<4.?1.:bp<5.?0.:bp<6.?1.:bp<7.?0.:1.;
+  float bg=(smoothstep(19.,21.,t)*(1.-step(40.,t))+step(45.,t))*step(t,56.);
+  float bf=fq(chord_root(bb)+12.+(bp>5.5?12.:0.));
+  float bass=(sn(bf,bl)*.8+saw(bf*2.,bl)*.25*exp(-bl*4.)+sn(bf*2.,bl)*.15)*on*exp(-bl*3.5)*smoothstep(0.,.006,bl);
+  dry+=vec2(bass)*.26*bg*duck;
+  // ---- melodic layers
+  vec2 pd=pad(t),st=strings(t),bl2=bells(t),ld=lead(t),ch=choir(t);
+  dry+=(pd+st)*duck*.75+bl2*.9+ld*.9+ch;
+  snd+=(pd*.6+st*.7+bl2*1.1+ld*.7+ch*1.2);
+  // ---- build: riser, snare roll, toms; impacts
+  float rs=smoothstep(36.,45.,t)*(1.-step(45.,t));
+  vec2 rsn=lps(int(mix(56.,2.,rs*rs)))*rs*.2;
+  dry+=rsn;snd+=rsn*.5;
+  float rl=t-41.25;
+  float roll=step(0.,rl)*step(rl,3.75)*snare(mod(rl,mix(.31,.078,clamp(rl/3.75,0.,1.))))*.4;
+  dry+=vec2(roll);snd+=vec2(roll)*.6;
+  float tm=t<44.9?tom(mod(t,BT*.5),mix(90.,150.,smoothstep(36.,44.9,t)))*step(mod(floor(t/(BT*.5)),4.),1.5)*smoothstep(36.,40.,t)*step(38.,t)*.25:0.;
+  dry+=vec2(tm);
+  float bd=t-45.;
+  float imp=step(0.,bd)*step(bd,4.)*(boom(bd)*.7+N*exp(-max(bd,0.)*3.)*.25);
+  dry+=vec2(imp);snd+=vec2(imp)*.5;
+  float fd=t-56.;
+  float fin=step(0.,fd)*(boom(fd)*.55+N*exp(-max(fd,0.)*2.2)*.3);
+  dry+=vec2(fin);snd+=vec2(fin)*.5;
+  // the letters play their own melody: E G B D E, one pluck per beat, in sync with the rising letters in the picture
+  for(int q=0;q<5;q++){float lt=t-45.-float(q)*BT;float nn=q<1?36.:q<2?39.:q<3?43.:q<4?46.:48.;
+    float pk=pluck(fq(nn),lt)*.5+pluck(fq(nn+12.),lt)*.2;dry+=vec2(pk);snd+=vec2(pk)*1.3;}
+  // reverse cymbal into the drop and into the final
+  float rv=smoothstep(43.,45.,t)*(1.-step(45.,t));
+  dry+=vec2(N)*rv*rv*.16;
+  o[i]=vec4(dry,snd);
+}

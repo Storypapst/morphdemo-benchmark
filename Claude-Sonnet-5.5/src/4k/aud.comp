@@ -1,0 +1,74 @@
+#version 430
+layout(local_size_x=64) in;
+layout(std430,binding=0) buffer B{vec2 o[];};
+const float P=6.2831853;
+float N,N1;
+
+float fq(float n){return 55.*exp2(n/12.);}
+float sn(float f,float t){return sin(P*fract(f*t));}
+float kick(float t){return t<0.?0.:sin(P*(48.*t+8.*(1.-exp(-30.*t))))*exp(-t*8.)+.4*N*exp(-t*200.);}
+float pl(float f,float t){if(t<0.)return 0.;float s=0.;for(int k=1;k<7;k++)s+=sn(f*float(k),t)/float(k)*exp(-t*(3.+2.5*float(k)));return s;}
+float rt(float b){float c=mod(b,4.);return c<1.?0.:c<2.?-4.:c<3.?3.:-2.;}
+float th(float b){return mod(b,4.)<1.?3.:4.;}
+float tn(float b,float i){return i<1.?0.:i<2.?th(b):i<3.?7.:i<4.?12.:i<5.?12.+th(b):19.;}
+
+vec2 bus(float t){
+  float O=ORD(t),g=smoothstep(11.,15.,t)*(1.-step(41.,t)*(1.-step(44.,t)));
+  float st=floor(t*8.),bar=floor(t/2.);
+  vec2 r=vec2(0);
+  for(int j=0;j<4;j++){
+    float k=st-float(j),b=floor(k/16.),q=mod(k,6.);
+    float i=q<1.?0.:q<2.?1.:q<3.?2.:q<4.?3.:q<5.?2.:1.;
+    float p=pl(fq(rt(b)+36.+tn(b,i)+(1.-O)*(F(k+5.)-.5)*6.),t-k*.125-(1.-O)*(F(k+9.)-.5)*.1)*.42;
+    float pn=.5+.4*sin(k*1.7);
+    r+=p*vec2(1.-pn,pn);
+  }
+  r*=g;
+  float pg=smoothstep(20.,28.,t)*(1.-step(41.,t)*(1.-step(44.,t)))+smoothstep(44.,46.,t)*.6;
+  for(int j=0;j<2;j++){
+    float b=bar-float(j),tb=t-b*2.;
+    float e=smoothstep(0.,.5,tb)*(1.-smoothstep(1.8,2.6,tb));
+    for(int i=0;i<3;i++){float f=fq(rt(b)+24.+tn(b,float(i)));r+=vec2(sn(f*.997,tb)+sn(f*1.003,tb)+.4*sn(f*2.,tb)+.2*sn(f*3.,tb))*e*.09*pg;}
+  }
+  float ld=(smoothstep(30.,31.,t)*(1.-smoothstep(38.,39.,t))+smoothstep(44.,44.2,t)*(1.-smoothstep(56.,56.4,t)))*.3;
+  float sl=floor(t*4.),tl=t-sl*.25,ph=mod(sl,8.),b2=floor(t/2.);
+  float m=ph<1.?2.:ph<2.?9.:ph<3.?3.:ph<4.?9.:ph<5.?4.:ph<6.?9.:ph<7.?3.:2.;
+  if(m<8.)r+=vec2(pl(fq(rt(b2)+36.+tn(b2,m)),tl))*ld*1.6;
+  for(int q=0;q<5;q++)r+=pl(fq(float(q<1?3:q<2?7:q<3?10:q<4?15:19)+24.),t-44.-float(q)*.5)*.3;      // one pluck per letter of the word (C E G C E)
+  return r;
+}
+void main(){
+  uint i=gl_GlobalInvocationID.x;
+  float t=float(i)/48000.;
+  N=F(i*2u+1u)*2.-1.;N1=F((i-1u)*2u+1u)*2.-1.;
+  float S=STA(t);
+  vec2 m=vec2((N+N1)*.15*S*(.5+.5*sin(t*.7)))+N*CK(t)*.5;
+  m+=(sn(fq(0.),t)*.1+sn(fq(7.)*1.002,t)*.05+sn(fq(12.),t)*.05)*smoothstep(3.,12.,t)*(1.-.7*smoothstep(15.,17.,t));
+  float kd=0.,k0=floor(t*2.);
+  for(int j=0;j<3;j++){float k=k0+1.-float(j);kd+=kick(t-KT(k))*KV(k);}
+  m+=kd*.3;
+  float du=1.-.55*KE(t);
+  float on=1.-step(41.,t)*(1.-step(44.,t));
+  float sp=fract(t*8.),hb=fract(t*2.+.5);
+  m+=((N-N1)*exp(-hb*.5*40.)*step(15.,t)+(N-N1)*exp(-sp*.125*180.)*step(23.,t)*step(.5,F(floor(t*8.)+33.)+.5)*.4)*.2*on;
+  float sr=mod(t-.5,1.);
+  m+=(N*exp(-sr*18.)*.6+sn(190.,sr)*exp(-sr*25.)*.4)*.3*step(24.,t)*on;
+  float bn=floor(t*4.),bl=t-bn*.25,bp=mod(bn,8.),bb=floor(t/2.);
+  float bo=bp<1.?1.:bp<2.?0.:bp<3.?1.:bp<4.?1.:bp<5.?0.:bp<6.?1.:bp<7.?0.:1.;
+  float bf=fq(rt(bb)+step(rt(bb),-1.)*12.);
+  m+=(pl(bf,bl)*.55+sn(bf,bl)*exp(-bl*3.))*bo*smoothstep(0.,.006,bl)*.25*(smoothstep(17.,19.,t)*step(t,41.)+step(44.,t)*step(t,57.))*du;
+  float rs=smoothstep(38.,44.,t)*step(t,44.);
+  m+=vec2((N+N1)*rs*rs*.1);
+  float rl=t-41.;                                                        // snare roll that speeds up into the drop
+  m+=step(0.,rl)*step(rl,3.)*N*exp(-mod(rl,mix(.25,.06,rl/3.))*22.)*(.1+.15*rl/3.);
+  float bd=t-44.;
+  m+=step(0.,bd)*(sin(P*70.*bd*(1.-.3*bd))*exp(-max(bd,0.)*1.2)*.6+N*exp(-max(bd,0.)*3.)*.2);
+  vec2 h=bus(t)+.3*bus(t-.13).yx+.22*bus(t-.29)+.16*bus(t-.47).yx+.12*bus(t-.71);
+  m+=h*du*smoothstep(4.,10.,t);
+  float ft=t-56.;
+  if(ft>0.){float e=smoothstep(0.,.05,ft)*exp(-ft*.7);for(int q=0;q<4;q++){float f=fq(float(q<1?0:q<2?4:q<3?7:12)+24.);m+=vec2(sn(f*.996,ft)+.3*sn(f*2.,ft),sn(f*1.004,ft)+.3*sn(f*2.,ft))*e*.09;}m+=N*exp(-ft*2.)*.2;}
+  m*=1.-.97*smoothstep(43.68,43.72,t)*(1.-smoothstep(43.98,44.,t));
+  m=tanh(m*1.15)*.7;
+  m*=min(t*20.,1.)*(1.-smoothstep(58.5,60.,t));
+  o[i]=m;
+}
