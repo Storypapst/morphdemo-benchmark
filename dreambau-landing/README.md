@@ -1,5 +1,8 @@
 # dreambau.com – Landing Page mit drei Animationen
 
+Die separate Kampagne [Jagged Intelligence](docs/JAGGED-INTELLIGENCE.md) nutzt dieselbe Laufzeit für vier neue
+audiovisuelle Fassungen (4, 16, 64 und 60 KB).
+
 Bei jedem Aufruf von dreambau.com startet **eine von drei Animationen, zufällig gewählt**. Jede dauert rund eine Minute,
 hat eigene Bilder und eigene Musik (beides wird erst im Browser erzeugt, es gibt keine Bild-, Video- oder Audiodateien),
 und endet auf einem ruhigen Schlussbild:

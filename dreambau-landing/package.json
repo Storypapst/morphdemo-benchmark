@@ -6,6 +6,8 @@
   "type": "module",
   "scripts": {
     "build": "node tools/build.mjs",
+    "build:jagged": "node tools/build.mjs --jagged",
+    "check:jagged": "node tools/check-jagged.mjs",
     "build:dev": "node tools/build.mjs --dev",
     "verify": "node tools/verify.mjs",
     "serve": "node tools/serve.mjs",

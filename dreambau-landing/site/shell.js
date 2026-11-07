@@ -13,7 +13,8 @@ const doc = document, $ = id => doc.getElementById(id), root = doc.documentEleme
 const Q = new URLSearchParams(location.search);
 const TEST = Q.has('test');                       // headless test mode: no autoplay, no adaptive scaling, manual clock
 const D = (window.Dream = window.Dream || {});
-D.ids = ['4k', '16k', '64k'];
+const campaign = doc.currentScript?.dataset.campaign === 'jagged';
+D.ids = campaign ? ['4k', '16k', '64k', '60k'] : ['4k', '16k', '64k'];
 D.prods = D.prods || {};                          // a single-file build registers the productions before the runtime runs
 D.add = def => { D.prods[def.id] = def; };
 D.state = { id: null, T: 0, audio: 'idle', muted: false, mode: 'boot', error: null, scale: 1, fps: 0 };
@@ -38,6 +39,10 @@ let T = 0, last = 0, raf = 0, hidden = doc.hidden, running = false, skipping = f
 let drawProg = null;                              // set for `frag` productions
 const TT = [0, 0, 1, .4];                         // tagline block in p-space: centre x, y, half width, half height
 let ctaShown = false;
+function reportTime() {
+  D.state.T = T;
+  if (campaign) D.onTime?.();
+}
 
 const A = {                                       // audio
   ctx: null, gain: null, src: null, buf: null, env: null, ready: false, failed: false,
@@ -401,6 +406,7 @@ async function finalise(buf) {                    // loudness, fades, then the e
   const n = buf.length, ch = [buf.getChannelData(0), buf.getChannelData(1)];
   let peak = 0, sum = 0;
   for (let i = 0; i < n; i += 2) { const a = ch[0][i], b = ch[1][i]; peak = Math.max(peak, Math.abs(a), Math.abs(b)); sum += a * a + b * b; }
+  if (!Number.isFinite(peak) || !Number.isFinite(sum)) throw new Error('invalid rendered audio');
   const rms = Math.sqrt(sum / (n / 2 * 2)) || 1e-6;
   const g = Math.min(.89 / (peak || 1), .1 / rms, 8);          // peak at most -1 dBFS, programme about -20 dBFS RMS
   const fi = Math.round(.04 * SR), fo = Math.round(1.6 * SR);
@@ -532,7 +538,8 @@ function stopAudio(fade = .3) {
 // Rendering
 // ---------------------------------------------------------------------------------------------
 function layout() {
-  const dpr = Math.min(window.devicePixelRatio || 1, 2), cw = Math.max(1, root.clientWidth), ch = Math.max(1, root.clientHeight);
+  const box = campaign ? canvas : root;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2), cw = Math.max(1, box.clientWidth), ch = Math.max(1, box.clientHeight);
   let s = dpr * scale;
   s = Math.min(s, Math.sqrt(maxPx / (cw * ch)));
   W = Math.max(2, Math.round(cw * s)); H = Math.max(2, Math.round(ch * s));
@@ -585,7 +592,7 @@ function frame(now) {
   // finishing touches driven by the clock
   if (!ctaShown && T >= def.cta) showCta();
   if (!finished && T >= def.fin) { finished = true; root.classList.add('done'); }
-  D.state.T = T;
+  reportTime();
   // performance monitor (not in test mode): lower the render scale when the frame rate stays low
   if (!TEST && overT < 0) {
     fpsT += dt; fpsN++;
@@ -597,6 +604,7 @@ function frame(now) {
 function showCta() { ctaShown = true; ui.cta.classList.add('on'); }
 
 function skip() {
+  if (!def) return;
   if (!running || skipping || T >= def.fin) { if (T < def.cta) showCta(); return; }
   skipping = true;
   ui.dip.classList.add('on');
@@ -672,7 +680,7 @@ function showStill() {
   A.muted = true; D.state.muted = true; setSnd('off');
   root.classList.add('still', 'done');
   T = def.fin + .3; layout(); guard(draw); showCta();
-  running = false; D.state.T = T; D.state.mode = 'still';
+  running = false; D.state.mode = 'still'; reportTime();
 }
 
 // Start the show: the picture runs at once, the music renders in the background and joins as soon as it is
@@ -737,9 +745,10 @@ function makeTestApi(audioP) {
     ready: audioP,
     def: () => ({ id: def.id, dur: def.dur, fin: def.fin, cta: def.cta }),
     seek(t) {
-      T = t; D.state.T = t; layout(); guard(draw); gl.finish();
+      T = t; layout(); guard(draw); gl.finish();
       gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px1);   // forces the GPU to complete (timing, screenshots)
       ui.cta.classList.toggle('on', t >= def.cta); root.classList.toggle('done', t >= def.fin);
+      reportTime();
       return { T, E: curEnv.slice() };
     },
     size: () => [W, H],

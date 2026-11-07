@@ -2,3 +2,4 @@
 // The runtime (site/shell.js, shader prelude, music kit) does not count, like system libraries for a native executable.
 export const BUDGET = { '4k': 4096, '16k': 16384, '64k': 65536 };
 export const IDS = Object.keys(BUDGET);
+export const JAGGED_BUDGET = { ...BUDGET, '60k': 60000 };

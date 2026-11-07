@@ -12,10 +12,9 @@ import path from 'node:path';
 import zlib from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
-import { BUDGET } from './budget.mjs';
+import { BUDGET, JAGGED_BUDGET } from './budget.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const SRC = path.join(ROOT, 'src', 'p'), OUT = path.join(ROOT, 'site', 'p');
 
 const require = createRequire(import.meta.url);
 function esbuild() {
@@ -55,24 +54,35 @@ function prepare(source, file) {
 }
 
 const args = process.argv.slice(2);
+const jagged = args.includes('--jagged');
 const dev = args.includes('--dev');
 const only = args.filter(a => !a.startsWith('--'));
-const ids = only.length ? only : Object.keys(BUDGET);          // src/p/test.js (the skeleton) is only built when asked for by name
+const budgetById = jagged ? JAGGED_BUDGET : BUDGET;
+const ids = only.length ? only : Object.keys(budgetById);       // src/p/test.js is only built when asked for by name
+const SRC = path.join(ROOT, 'src', jagged ? 'jagged' : 'p');
+const site = path.join(ROOT, 'site', jagged ? 'jagged-intelligence' : '');
+const OUT = path.join(site, 'p');
+const shared = jagged ? prepare(fs.readFileSync(path.join(SRC, 'common.js'), 'utf8'), 'common.js') : '';
 fs.mkdirSync(OUT, { recursive: true });
 const es = esbuild();
+if (jagged) {
+  const shell = fs.readFileSync(path.join(ROOT, 'site', 'shell.js'), 'utf8');
+  const runtime = es.transformSync(shell, { minify: !dev, target: 'es2020', legalComments: 'none' }).code;
+  fs.writeFileSync(path.join(site, 'shell.js'), runtime);
+}
 let bad = 0;
 const rows = [];
 for (const id of ids) {
   const file = path.join(SRC, id + '.js');
   if (!fs.existsSync(file)) { console.error('missing', file); bad++; continue; }
-  const code = `(()=>{${prepare(fs.readFileSync(file, 'utf8'), file)}\n})();`;
+  const code = `(()=>{${shared}\n${prepare(fs.readFileSync(file, 'utf8'), file)}\n})();`;
   let res;
   try {
     res = es.transformSync(code, { minify: !dev, target: 'es2020', legalComments: 'none', sourcefile: id + '.js' });
   } catch (e) { console.error(`${id}: ${e.message}`); bad++; continue; }
   const out = res.code;
   fs.writeFileSync(path.join(OUT, id + '.js'), out);
-  const bytes = Buffer.byteLength(out), gz = zlib.gzipSync(out, { level: 9 }).length, budget = BUDGET[id];
+  const bytes = Buffer.byteLength(out), gz = zlib.gzipSync(out, { level: 9 }).length, budget = budgetById[id];
   const ok = !budget || bytes <= budget;
   if (!ok && !dev) bad++;
   rows.push({ id, bytes, gz, budget, ok });

@@ -18,7 +18,7 @@ export async function launch({ autoplay = true, extra = [] } = {}) {
   const { chromium } = playwright();
   const args = ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-webgl', ...extra];
   if (autoplay) args.push('--autoplay-policy=no-user-gesture-required');
-  return chromium.launch({ headless: true, args });
+  return chromium.launch({ headless: true, args, executablePath: process.env.CHROMIUM_EXECUTABLE });
 }
 
 // BASE_URL=http://localhost:8080 runs the tools against a served copy (e.g. `CSP=1 npm run serve`) instead of file://
