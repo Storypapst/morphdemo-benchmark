@@ -60,22 +60,13 @@
           <span id="time" aria-hidden="true">00 / 60 S</span>
           <button id="skip" type="button" aria-keyshortcuts="Escape"><span>Zum Schlussbild</span><kbd aria-hidden="true">Esc</kbd></button>
           <button id="play" type="button">Animation abspielen</button>
-          <a id="replay" href="./">Noch einmal <span aria-hidden="true">↻</span></a>
         </div>
         <p class="visually-hidden" id="tag" data-lines="KI hat Kanten.|Wir bauen Brücken.|dreambau.com">KI hat Kanten. Wir bauen Brücken. dreambau.com</p>
         <p id="cta"><a href="mailto:info@dreambau.com">info@dreambau.com</a></p>
       </div>
       <progress id="progress" class="progress" max="60" value="0" aria-label="Fortschritt der Animation"></progress>
 
-      <div class="cuts">
-        <p>VIER FASSUNGEN</p>
-        <nav aria-label="Fassung wählen">
-          <a data-cut="4k" href="?anim=4k"><span>01</span> Kante <small>4 KB</small></a>
-          <a data-cut="16k" href="?anim=16k"><span>02</span> Tragwerk <small>16 KB</small></a>
-          <a data-cut="64k" href="?anim=64k"><span>03</span> Schlucht <small>64 KB</small></a>
-          <a data-cut="60k" href="?anim=60k"><span>04</span> Signal <small>60 KB</small></a>
-        </nav>
-      </div>
+      <div class="cut-action"><a id="next-cut" href="?">Andere Fassung <span aria-hidden="true">↻</span></a></div>
     </section>
 
     <section class="story" aria-labelledby="story-title">

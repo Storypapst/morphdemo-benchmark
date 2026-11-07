@@ -1,8 +1,9 @@
 # Jagged Intelligence
 
 **KI hat Kanten. Wir bauen Brücken.** Die neue MorphDemo-Produktion hat eine eigene Seite unter
-[Dreambau](https://dreambau.com/homepage-assets/jagged-intelligence/). Sie wählt beim Laden genau eine Fassung;
-`?anim=4k`, `?anim=16k`, `?anim=64k` und `?anim=60k` wählen sie direkt.
+[Dreambau](https://dreambau.com/homepage-assets/jagged-intelligence/). Sie wählt beim Laden genau eine Fassung.
+„Andere Fassung“ startet eine zufällig gewählte andere Fassung. Für direkte Links und die Prüfung bleiben
+`?anim=4k`, `?anim=16k`, `?anim=64k` und `?anim=60k` verfügbar.
 
 | Fassung | Obergrenze (Bytes) | Bild und Musik |
 |---|---:|---|

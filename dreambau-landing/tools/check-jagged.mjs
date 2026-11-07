@@ -58,7 +58,8 @@ try {
       const loaded = requests.map(r => new URL(r));
       assert(loaded.every(r => r.origin === url.origin), id + ' no third-party requests');
       assert.deepEqual(loaded.filter(r => /\/p\/[^/]+\.js$/.test(r.pathname)).map(r => path.basename(r.pathname)), [id + '.js']);
-      assert.equal(await page.locator('[data-cut][aria-current]').getAttribute('data-cut'), id);
+      const next = new URL(await page.locator('#next-cut').getAttribute('href'), url).searchParams.get('anim');
+      assert(ids.includes(next) && next !== id, id + ' offers a different cut');
       for (const t of stageTimes) {
         await page.evaluate(t => Dream.test.seek(t), t);
         await page.locator('.stage').screenshot({ path: path.join(output, id + '-' + t + '.png') });
@@ -100,9 +101,11 @@ try {
     await page.keyboard.press('Escape');
     await page.waitForFunction(() => document.documentElement.classList.contains('done') && !Dream.dbg().playing);
     assert.equal(await page.locator('#cta a').getAttribute('href'), 'mailto:info@dreambau.com');
-    await page.locator('[data-cut="60k"]').click();
-    await page.waitForURL(pageUrl({ anim: '60k' }));
-    await page.waitForFunction(() => window.Dream?.state.mode === 'play' && Dream.state.id === '60k');
+    const nextLink = page.getByRole('link', { name: 'Andere Fassung' });
+    const next = new URL(await nextLink.getAttribute('href'), url).searchParams.get('anim');
+    await nextLink.click();
+    await page.waitForURL(pageUrl({ anim: next }));
+    await page.waitForFunction(id => window.Dream?.state.mode === 'play' && Dream.state.id === id, next);
   } finally {
     await page.close();
   }
@@ -120,7 +123,8 @@ try {
       assert(await p.getByRole('heading', { level: 1, name: 'Jagged Intelligence' }).isVisible());
       if (setting === 'random') {
         await p.waitForFunction(() => window.Dream?.state.mode === 'still');
-        assert(ids.includes(await p.locator('[aria-current]').getAttribute('data-cut')));
+        assert(ids.includes(await p.evaluate(() => Dream.state.id)));
+        assert.equal(await p.getByRole('link', { name: 'Andere Fassung' }).count(), 1);
       } else {
         if (setting === 'no-webgl') await p.waitForFunction(() => document.documentElement.classList.contains('static'));
         assert(await p.locator('.still-art').isVisible(), setting + ' fallback is visible');

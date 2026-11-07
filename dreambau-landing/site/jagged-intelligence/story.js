@@ -2,10 +2,11 @@
 (() => {
   const dream = window.Dream;
   const production = dream.state.id;
-  const cut = [...document.querySelectorAll('[data-cut]')].find(link => link.dataset.cut === production);
-  if (cut) {
-    cut.setAttribute('aria-current', 'true');
-    document.getElementById('replay').href = cut.href;
+  const next = document.getElementById('next-cut');
+  if (next) {
+    const otherCuts = dream.ids.filter(id => id !== production);
+    const pick = Math.floor(Math.random() * otherCuts.length);
+    next.href = '?anim=' + otherCuts[pick];
   }
   const phase = document.getElementById('phase-label');
   const progress = document.getElementById('progress');
