@@ -1,0 +1,88 @@
+{
+  "url": "https://dreambau.com/homepage-assets/jagged-intelligence/",
+  "productions": {
+    "4k": {
+      "size": 3108,
+      "budget": 4096,
+      "renderWaitMs": 153,
+      "changes": [
+        0.003492295683705591,
+        0.0035417305811213436,
+        0.025906485588062425
+      ],
+      "endContrast": [
+        15.61129445662625,
+        13.80019266292892,
+        18.957111515083234
+      ],
+      "cueEnergy": [
+        0.7375195026397705,
+        0.5522875785827637,
+        1
+      ]
+    },
+    "16k": {
+      "size": 4158,
+      "budget": 16384,
+      "renderWaitMs": 983,
+      "changes": [
+        0.008841287440902353,
+        0.008701485532484622,
+        0.024810444702572352
+      ],
+      "endContrast": [
+        14.502676312447946,
+        13.64661602409316,
+        19.320251728976015
+      ],
+      "cueEnergy": [
+        0.7565311193466187,
+        0.751430332660675,
+        1
+      ]
+    },
+    "64k": {
+      "size": 5112,
+      "budget": 65536,
+      "renderWaitMs": 1226,
+      "changes": [
+        0.0035853685610046666,
+        0.009407810500743517,
+        0.023867189313997204
+      ],
+      "endContrast": [
+        13.661037261368467,
+        13.779606425639667,
+        19.274705849837744
+      ],
+      "cueEnergy": [
+        0.6491178870201111,
+        0.5839825868606567,
+        1
+      ]
+    },
+    "60k": {
+      "size": 4717,
+      "budget": 60000,
+      "renderWaitMs": 950,
+      "changes": [
+        0.005965842818608937,
+        0.005835734602483019,
+        0.02633088312485487
+      ],
+      "endContrast": [
+        15.043313636665108,
+        13.847442058302853,
+        19.33820855815818
+      ],
+      "cueEnergy": [
+        0.5355271697044373,
+        0.6589509844779968,
+        1
+      ]
+    }
+  },
+  "behavior": "Strict CSP, byte parity, responsive layout, reduced motion, fallback, variant choice, mute, Esc, autoplay allow/block",
+  "deployedCommit": "4448ad6764cd208be84679dd3a757f295328b471",
+  "protectedRoutes": "Root, Bildungshaus, Matrix discovery and existing ORISO asset directory match before/after checksums; Testmails login 200 and protected accounts API 401."
+}

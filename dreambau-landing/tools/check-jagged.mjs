@@ -79,7 +79,7 @@ try {
     const page = await browser.newPage({ viewport: { width: w, height: h }, reducedMotion: 'reduce' });
     try {
       await page.goto(pageUrl({ anim: '60k' }));
-      await page.waitForFunction(() => Dream.state.mode === 'still', null, { timeout: 12000 });
+      await page.waitForFunction(() => window.Dream?.state.mode === 'still', null, { timeout: 12000 });
       assert(await page.evaluate(() => document.documentElement.scrollWidth === innerWidth), w + ' no overflow');
       assert.equal(await page.locator('#progress').evaluate(p => p.value), 60);
       assert.equal(await page.evaluate(() => Dream.dbg().playing), false, w + ' reduced motion is silent');
@@ -92,7 +92,7 @@ try {
   const page = await browser.newPage({ viewport: { width: 920, height: 640 } });
   try {
     await page.goto(pageUrl({ anim: '4k' }));
-    await page.waitForFunction(() => Dream.dbg().playing, null, { timeout: 12000 });
+    await page.waitForFunction(() => window.Dream?.dbg().playing, null, { timeout: 12000 });
     await page.getByRole('switch', { name: 'Ton' }).click();
     await page.waitForFunction(() => Dream.dbg().muted);
     await page.keyboard.press('m');
@@ -101,8 +101,8 @@ try {
     await page.waitForFunction(() => document.documentElement.classList.contains('done') && !Dream.dbg().playing);
     assert.equal(await page.locator('#cta a').getAttribute('href'), 'mailto:info@dreambau.com');
     await page.locator('[data-cut="60k"]').click();
-    await page.waitForFunction(() => Dream.state.mode === 'play' && Dream.state.id === '60k');
-    assert.equal(new URL(page.url()).searchParams.get('anim'), '60k');
+    await page.waitForURL(pageUrl({ anim: '60k' }));
+    await page.waitForFunction(() => window.Dream?.state.mode === 'play' && Dream.state.id === '60k');
   } finally {
     await page.close();
   }
@@ -119,7 +119,7 @@ try {
       await p.goto(pageUrl(setting === 'random' ? {} : { anim: '16k' }));
       assert(await p.getByRole('heading', { level: 1, name: 'Jagged Intelligence' }).isVisible());
       if (setting === 'random') {
-        await p.waitForFunction(() => Dream.state.mode === 'still');
+        await p.waitForFunction(() => window.Dream?.state.mode === 'still');
         assert(ids.includes(await p.locator('[aria-current]').getAttribute('data-cut')));
       } else {
         if (setting === 'no-webgl') await p.waitForFunction(() => document.documentElement.classList.contains('static'));
@@ -137,7 +137,7 @@ try {
       const p = await browser.newPage({ viewport: { width: 640, height: 520 } });
       try {
         await p.goto(pageUrl({ anim: id, q: .43 }));
-        await p.waitForFunction(() => Dream.dbg().playing, null, { timeout: 12000 });
+        await p.waitForFunction(() => window.Dream?.dbg().playing, null, { timeout: 12000 });
         await p.waitForFunction(() => Dream.dbg().T >= 60, null, { timeout: 78000 });
         assert(await p.locator('#cta').isVisible());
         assert.equal(await p.evaluate(() => Dream.state.error), null);
@@ -155,7 +155,7 @@ const blocked = await launch({ autoplay: false, extra: ['--autoplay-policy=docum
 try {
   const p = await blocked.newPage({ viewport: { width: 920, height: 640 } });
   await p.goto(pageUrl({ anim: '60k' }));
-  await p.waitForFunction(() => Dream.state.audio === 'blocked' && Dream.state.T > .4, null, { timeout: 12000 });
+  await p.waitForFunction(() => window.Dream?.state.audio === 'blocked' && Dream.state.T > .4, null, { timeout: 12000 });
   assert.equal(await p.evaluate(() => Dream.dbg().playing), false);
   await p.getByRole('switch', { name: 'Ton' }).click();
   await p.waitForFunction(() => Dream.dbg().playing && Dream.dbg().audioT > 0, null, { timeout: 12000 });
